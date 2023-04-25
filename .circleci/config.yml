@@ -16,7 +16,7 @@ commands:
           when: on_fail
           command: |
             aws cloudformation delete-stack --stack-name backend-${CIRCLE_WORKFLOW_ID:0:5}
-            aws s3 rm s3://udapeople-<<parameters.Workflow_ID>> --recursive
+            aws s3 rm s3://udapeople-Final-<<parameters.Workflow_ID>> --recursive
             aws cloudformation delete-stack --stack-name frontend-<< parameters.Workflow_ID >>
   notify_on_failure:
       steps:
@@ -160,7 +160,7 @@ jobs:
           command: |
             aws cloudformation deploy \
               --template-file .circleci/files/backend.yml \
-              --tags project=udapeople \
+              --tags project=udapeople-Final \
               --stack-name "backend" \
               --parameter-overrides ID=${CIRCLE_WORKFLOW_ID:0:5}
 
@@ -169,7 +169,7 @@ jobs:
       #     command: |
       #       aws cloudformation deploy \
       #         --template-file .circleci/files/frontend.yml \
-      #         --tags project=udapeople \
+      #         --tags project=udapeople-Final \
       #         --stack-name "frontend-${CIRCLE_WORKFLOW_ID:0:5}" \
       #         --parameter-overrides ID="${CIRCLE_WORKFLOW_ID:0:5}"
       - run:
@@ -220,7 +220,6 @@ jobs:
             export TYPEORM_HOST=$(aws ec2 describe-instances --region us-east-1 --query 'Reservations[*].Instances[*].PublicIpAddress' --output text)
             cd backend
             npm install
-            
             npm run premigrations
             npm run migrations
 
@@ -246,8 +245,8 @@ jobs:
             echo "API_URL=http://$BACKEND_PUBLIC_IP:3030" > .env
             npm install
             npm run build:prod
-            # aws s3 sync dist s3://udapeople-project
-            aws s3 cp dist s3://udapeople-${CIRCLE_WORKFLOW_ID:0:5} --recursive
+            # aws s3 sync dist s3://udapeople-Final-project
+            aws s3 cp dist s3://udapeople-Final-${CIRCLE_WORKFLOW_ID:0:5} --recursive
 
 #       # Here's where you will add some code to rollback on failure      
                     
@@ -343,7 +342,7 @@ jobs:
             echo Old Workflow ID: $OldWorkflowID 
             if [[ "${STACKS[@]}" =~ "${OldWorkflowID}" ]]
             then
-              aws s3 rm "s3://udapeople-${OldWorkflowID}" --recursive
+              aws s3 rm "s3://udapeople-Final-${OldWorkflowID}" --recursive
               aws cloudformation delete-stack --stack-name "backend-${OldWorkflowID}"
               aws cloudformation delete-stack --stack-name "frontend-${OldWorkflowID}"
             fi
@@ -362,13 +361,13 @@ workflows:
       #     requires: [build-backend]
       # - scan-frontend:
       #     requires: [build-frontend]
-      - deploy-infrastructure:
-          # requires: [test-frontend, test-backend, scan-frontend, scan-backend]
-          filters:
-            branches: 
-              only: [main]
-      # - configure-infrastructure:
-      #     requires: [deploy-infrastructure]
+      # - deploy-infrastructure:
+      #     # requires: [test-frontend, test-backend, scan-frontend, scan-backend]
+      #     filters:
+      #       branches: 
+      #         only: [main]
+      - configure-infrastructure
+          # requires: [deploy-infrastructure]
       # - run-migrations
           # requires: [configure-infrastructure]
       # - deploy-frontend:
